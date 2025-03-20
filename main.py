@@ -3,12 +3,12 @@ from sentiment import SpotifyMoodAnalyzer
 import os
 app = Flask(__name__)
 
-# Configura le credenziali di Spotify
+
 client_id = os.getenv('SPOTIFY_CLIENT_ID')
 client_secret = os.getenv('SPOTIFY_CLIENT_SECRET')
 redirect_uri = os.getenv('SPOTIFY_REDIRECT_URI')
 
-# Inizializza l'analizzatore di mood
+
 mood_analyzer = SpotifyMoodAnalyzer(client_id, client_secret, redirect_uri)
 
 @app.route('/')
@@ -28,7 +28,7 @@ def user_recap():
         top_artists = [artist['name'] for artist in user_data['top_artists']['items']]
         recently_played = [track['track']['name'] for track in user_data['recently_played']['items']]
 
-        # Stampa i dati dell'utente
+
         print(f"Utente: {user_profile['display_name']}")
         print(f"ID: {user_profile['id']}")
         print(f"Generi preferiti: {list(top_genres.keys())[:5]}")
