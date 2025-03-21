@@ -37,27 +37,35 @@ class SpotifyMoodAnalyzer:
             redirect_uri=self.redirect_uri,
             scope=' '.join(scope)
         )
-        
-        # Autentica l'utente
         return spotipy.Spotify(auth_manager=sp_oauth)
     
     def get_user_data(self, sp_user):
         user_profile = sp_user.current_user()
         
-        top_tracks_medium = sp_user.current_user_top_tracks(time_range='medium_term', limit=10)
-        top_artists_medium = sp_user.current_user_top_artists(time_range='medium_term', limit=10)
+        top_tracks = {
+        'short_term': sp_user.current_user_top_tracks(time_range='short_term', limit=10),
+        'medium_term': sp_user.current_user_top_tracks(time_range='medium_term', limit=10),
+        'long_term': sp_user.current_user_top_tracks(time_range='long_term', limit=10)
+        }
+    
+        top_artists = {
+        'short_term': sp_user.current_user_top_artists(time_range='short_term', limit=10),
+        'medium_term': sp_user.current_user_top_artists(time_range='medium_term', limit=10),
+        'long_term': sp_user.current_user_top_artists(time_range='long_term', limit=10)
+        }
+
         
         recently_played = sp_user.current_user_recently_played(limit=10)
         
         genres = []
-        for artist in top_artists_medium['items']:
+        for artist in top_artists['medium_term']['items']:
             genres.extend(artist['genres'])
         genre_counts = pd.Series(genres).value_counts().to_dict()
         
         return {
             'user_profile': user_profile,
-            'top_tracks': top_tracks_medium,
-            'top_artists': top_artists_medium,
+            'top_tracks': top_tracks,
+            'top_artists': top_artists,
             'recently_played': recently_played,
             'top_genres': genre_counts
         }
