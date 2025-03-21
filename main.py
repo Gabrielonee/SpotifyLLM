@@ -17,34 +17,29 @@ def home():
 
 @app.route('/user_recap')
 def user_recap():
-    """Recupera e stampa un recap dell'utente"""
-    try:
-        sp_user = mood_analyzer.authenticate_user()
-        user_data = mood_analyzer.get_user_data(sp_user)
+    sp_user = mood_analyzer.authenticate_user()
+    user_data = mood_analyzer.get_user_data(sp_user)
 
-        user_profile = user_data['user_profile']
-        top_genres = user_data['top_genres']
-        top_tracks = [track['name'] for track in user_data['top_tracks']['items']]
-        top_artists = [artist['name'] for artist in user_data['top_artists']['items']]
-        recently_played = [track['track']['name'] for track in user_data['recently_played']['items']]
+    print(user_data)  # Stampa tutta la struttura per vedere cosa è presente
 
-
-        print(f"Utente: {user_profile['display_name']}")
-        print(f"ID: {user_profile['id']}")
-        print(f"Generi preferiti: {list(top_genres.keys())[:5]}")
-        print(f"Top brani: {top_tracks[:5]}")
-        print(f"Top artisti: {top_artists[:5]}")
-        print(f"Ultimi ascolti: {recently_played[:5]}")
-
-        return {
-            "user": user_profile['display_name'],
-            "top_genres": list(top_genres.keys())[:5],
-            "top_tracks": top_tracks[:5],
-            "top_artists": top_artists[:5],
-            "recently_played": recently_played[:5]
-        }
-    except Exception as e:
-        return {"error": str(e)}
-
+    return render_template('user_recap.html',
+                           user=user_data['user_profile']['display_name'],
+                           top_tracks = [
+                            {
+                                'name': track['name'],
+                                'artist': track['artists'][0]['name'],  # Primo artista
+                                'album': track['album']['name'],
+                                'image_url': track['album']['images'][0]['url'] if track['album']['images'] else None
+                            } for track in user_data.get('top_tracks', {}).get('short_term', {}).get('items', [])
+                            ],
+                            top_artists=[artist['name'] for artist in user_data.get('top_artists', {}).get('short_term', {}).get('items', [])[:5]],
+                            top_genres=list(user_data.get('top_genres', {}).keys())[:5],
+                            recently_played=[{
+                               'name': track['track']['name'],
+                               'artist': track['track']['artists'][0]['name'],
+                               'image': track['track']['album']['images'][0]['url'],
+                               'url': track['track']['external_urls']['spotify']
+                           } for track in user_data.get('recently_played', {}).get('items', [])[:5]]
+                           )
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
